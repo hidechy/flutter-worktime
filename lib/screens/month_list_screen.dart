@@ -92,6 +92,8 @@ class _MonthListScreenState extends State<MonthListScreen> {
       _map['work_end'] = "";
       _map['diff'] = "";
 
+      _map['minus'] = "";
+
       if (data['data'].length > 0) {
         if (data['data'][date] != null) {
           _map['work_start'] = data['data'][date]['work_start'];
@@ -119,8 +121,14 @@ class _MonthListScreenState extends State<MonthListScreen> {
 
           int diffMinutes = _endTime.difference(_startTime).inMinutes;
 
-          var onedayDiff = ((diffMinutes - 60) / 60);
-          _map['diff'] = onedayDiff;
+          print(date);
+
+          var _minusMinutes =
+              _getMinusMinutes(end: data['data'][date]['work_end']);
+          _map['minus'] = "${_minusMinutes}min";
+
+          var onedayDiff = ((diffMinutes - _minusMinutes) / 60);
+          _map['diff'] = "${onedayDiff}hrs";
 
           _monthWorkingTotal += onedayDiff;
           //-------------------------------//
@@ -246,6 +254,14 @@ class _MonthListScreenState extends State<MonthListScreen> {
                         ),
                         Container(
                           alignment: Alignment.topRight,
+                          child: Text(
+                            '${_monthData[position]['minus']}',
+                            style: TextStyle(
+                                color: Colors.yellowAccent.withOpacity(0.5)),
+                          ),
+                        ),
+                        Container(
+                          alignment: Alignment.topRight,
                           child: Text('${_monthData[position]['diff']}'),
                         ),
                       ]),
@@ -277,6 +293,57 @@ class _MonthListScreenState extends State<MonthListScreen> {
         ),
       ],
     );
+  }
+
+  /**
+   *
+   */
+  _getMinusMinutes({String end}) {
+    //-------------------// pattern
+    var _minusPattern = 0;
+    switch (_displayYear) {
+      case '2021':
+        switch (_displayMonth) {
+          case '02':
+          case '03':
+            _minusPattern = 1;
+            break;
+        }
+        break;
+    }
+    //-------------------// pattern
+
+    switch (_minusPattern) {
+      case 0:
+        return 60;
+        break;
+      case 1:
+        var ex_end = end.split(":");
+
+        var _endTime = new DateTime(
+          int.parse(_displayYear),
+          int.parse(_displayMonth),
+          int.parse(_displayDay),
+          int.parse(ex_end[0]),
+          int.parse(ex_end[1]),
+        );
+
+        //(1)
+        var _hikaku1 = new DateTime(int.parse(_displayYear),
+            int.parse(_displayMonth), int.parse(_displayDay), 17, 30);
+        int diffMinutes1 = _endTime.difference(_hikaku1).inMinutes;
+        var _minus1 = (diffMinutes1 > 0) ? 30 : 0;
+
+        //(2)
+        var _hikaku2 = new DateTime(int.parse(_displayYear),
+            int.parse(_displayMonth), int.parse(_displayDay), 22, 00);
+        int diffMinutes2 = _endTime.difference(_hikaku2).inMinutes;
+        var _minus2 = (diffMinutes2 > 0) ? 30 : 0;
+
+        return (60 + _minus1 + _minus2);
+
+        break;
+    }
   }
 
   /**
