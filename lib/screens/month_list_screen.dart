@@ -10,6 +10,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 
 class MonthListScreen extends StatefulWidget {
   final String date;
+
   MonthListScreen({@required this.date});
 
   @override
@@ -31,6 +32,9 @@ class _MonthListScreenState extends State<MonthListScreen> {
   DateTime _nextMonth = DateTime.now();
 
   double _monthWorkingTotal = 0.0;
+
+  String company;
+  String genba;
 
   /**
    * 初期動作
@@ -63,6 +67,25 @@ class _MonthListScreenState extends State<MonthListScreen> {
 
     _utility.makeYMDYData(_utility.monthEndDateTime, 0);
     monthEndDay = _utility.day;
+
+    //-------------------------------------------
+    String url2 = "http://toyohide.work/BrainLog/api/workinggenbaname";
+    Map<String, String> headers2 = {'content-type': 'application/json'};
+    String body2 = json.encode({"date": ''});
+    Response response2 = await post(url2, headers: headers2, body: body2);
+
+    if (response2 != null) {
+      var data2 = jsonDecode(response2.body);
+
+      for (var i = 0; i < data2['data'].length; i++) {
+        if (data2['data'][i]['yearmonth'] ==
+            '${_displayYear}-${_displayMonth}') {
+          company = data2['data'][i]['company'];
+          genba = data2['data'][i]['genba'];
+        }
+      }
+    }
+    //-------------------------------------------
 
     ////////////////////////////////////////
     Map data = Map();
@@ -121,8 +144,6 @@ class _MonthListScreenState extends State<MonthListScreen> {
 
           int diffMinutes = _endTime.difference(_startTime).inMinutes;
 
-          print(date);
-
           var _minusMinutes =
               _getMinusMinutes(end: data['data'][date]['work_end']);
           _map['minus'] = "${_minusMinutes}min";
@@ -171,26 +192,76 @@ class _MonthListScreenState extends State<MonthListScreen> {
           Column(
             children: <Widget>[
               Container(
-                alignment: Alignment.topRight,
-                padding: EdgeInsets.only(right: 10),
-                child: Row(
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Colors.yellowAccent.withOpacity(0.3),
+                      width: 10,
+                    ),
+                  ),
+                ),
+                child: Column(
                   children: <Widget>[
-                    Expanded(
-                      child: Container(
-                        alignment: Alignment.topRight,
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                                color: Colors.white.withOpacity(0.3), width: 3),
+                    Container(
+                      alignment: Alignment.topRight,
+                      padding: EdgeInsets.only(right: 10),
+                      child: Row(
+                        children: <Widget>[
+                          Expanded(
+                            child: Container(
+                              alignment: Alignment.topRight,
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                      color: Colors.white.withOpacity(0.3),
+                                      width: 3),
+                                ),
+                              ),
+                              child: Text('${_monthWorkingTotal}'),
+                            ),
                           ),
-                        ),
-                        child: Text('${_monthWorkingTotal}'),
+                          IconButton(
+                            icon: const Icon(Icons.refresh),
+                            onPressed: () =>
+                                _goMonthListScreen(date: widget.date),
+                            color: Colors.greenAccent,
+                          ),
+                        ],
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.refresh),
-                      onPressed: () => _goMonthListScreen(date: widget.date),
-                      color: Colors.greenAccent,
+                    Column(
+                      children: <Widget>[
+                        Container(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          child: Row(
+                            children: <Widget>[
+                              Container(
+                                width: 80,
+                                child: Text('Company : '),
+                              ),
+                              Expanded(
+                                child: Text('${company}'),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          child: Row(
+                            children: <Widget>[
+                              Container(
+                                width: 80,
+                                child: Text('Genba : '),
+                              ),
+                              Expanded(
+                                child: Text('${genba}'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -301,16 +372,23 @@ class _MonthListScreenState extends State<MonthListScreen> {
   _getMinusMinutes({String end}) {
     //-------------------// pattern
     var _minusPattern = 0;
-    switch (_displayYear) {
-      case '2021':
-        switch (_displayMonth) {
-          case '02':
-          case '03':
-            _minusPattern = 1;
-            break;
-        }
-        break;
+
+    if (int.parse(_displayYear) >= 2021) {
+      if (int.parse(_displayMonth) >= 2) {
+        _minusPattern = 1;
+      }
     }
+
+    // switch (_displayYear) {
+    //   case '2021':
+    //     switch (_displayMonth) {
+    //       case '02':
+    //       case '03':
+    //         _minusPattern = 1;
+    //         break;
+    //     }
+    //     break;
+    // }
     //-------------------// pattern
 
     switch (_minusPattern) {
