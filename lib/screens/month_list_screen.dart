@@ -68,6 +68,18 @@ class _MonthListScreenState extends State<MonthListScreen> {
     _utility.makeYMDYData(_utility.monthEndDateTime, 0);
     monthEndDay = _utility.day;
 
+    //#############################
+    var _holiday;
+    String url3 = "http://toyohide.work/BrainLog/api/getholiday";
+    Map<String, String> headers3 = {'content-type': 'application/json'};
+    String body3 = json.encode({"date": ''});
+    Response response3 = await post(url3, headers: headers3, body: body3);
+
+    if (response3 != null) {
+      _holiday = jsonDecode(response3.body);
+    }
+    //#############################
+
     //-------------------------------------------
     String url2 = "http://toyohide.work/BrainLog/api/workinggenbaname";
     Map<String, String> headers2 = {'content-type': 'application/json'};
@@ -110,6 +122,7 @@ class _MonthListScreenState extends State<MonthListScreen> {
 
       Map _map = Map();
       _map['date'] = date;
+      _map['holiday'] = _getHoliday(date: date, holiday: _holiday);
 
       _map['work_start'] = "";
       _map['work_end'] = "";
@@ -160,6 +173,21 @@ class _MonthListScreenState extends State<MonthListScreen> {
     }
 
     setState(() {});
+  }
+
+  /**
+   *
+   */
+  int _getHoliday({String date, holiday}) {
+    var _flag = 0;
+    for (var i = 0; i < holiday['data'].length; i++) {
+      if (holiday['data'][i] == date) {
+        _flag = 1;
+        break;
+      }
+    }
+
+    return _flag;
   }
 
   /**
@@ -347,23 +375,61 @@ class _MonthListScreenState extends State<MonthListScreen> {
 
       //actions: <Widget>[],
       secondaryActions: <Widget>[
-        IconSlideAction(
-          color: _utility.getBgColor(
-            _monthData[position]['date'],
-            _monthData[position]['work_start'],
-            _monthData[position]['work_end'],
-          ),
-          foregroundColor: Colors.blueAccent,
-          icon: Icons.details,
-          onTap: () => _goWorktimeInputScreen(
-            context: context,
-            date: _monthData[position]['date'],
-            start: _monthData[position]['work_start'],
-            end: _monthData[position]['work_end'],
-          ),
-        ),
+        _getInputButton(position),
       ],
     );
+  }
+
+  /**
+   *
+   */
+  Widget _getInputButton(int position) {
+    _utility.makeYMDYData(_monthData[position]['date'], 0);
+
+    var _disp = 0;
+    switch (_utility.youbiNo) {
+      case 0:
+      case 6:
+        _disp = 1;
+        break;
+      default:
+        _disp = 0;
+        break;
+    }
+
+    if (_disp == 0) {
+      if (_monthData[position]['holiday'] == 1) {
+        _disp = 1;
+      }
+    }
+
+    if (_disp == 1) {
+      return IconSlideAction(
+        color: _utility.getBgColor(
+          _monthData[position]['date'],
+          _monthData[position]['work_start'],
+          _monthData[position]['work_end'],
+        ),
+        foregroundColor: Colors.black.withOpacity(0.1),
+        icon: Icons.crop_square,
+      );
+    } else {
+      return IconSlideAction(
+        color: _utility.getBgColor(
+          _monthData[position]['date'],
+          _monthData[position]['work_start'],
+          _monthData[position]['work_end'],
+        ),
+        foregroundColor: Colors.blueAccent,
+        icon: Icons.details,
+        onTap: () => _goWorktimeInputScreen(
+          context: context,
+          date: _monthData[position]['date'],
+          start: _monthData[position]['work_start'],
+          end: _monthData[position]['work_end'],
+        ),
+      );
+    }
   }
 
   /**
