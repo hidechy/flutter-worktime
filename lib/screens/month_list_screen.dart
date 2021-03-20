@@ -340,32 +340,40 @@ class _MonthListScreenState extends State<MonthListScreen> {
               children: <Widget>[
                 Text('${_monthData[position]['date']}（${_utility.youbiStr}）'),
                 Expanded(
-                  child: Table(
-                    children: [
-                      TableRow(children: [
-                        Container(
-                          alignment: Alignment.topCenter,
-                          child: Text('${_monthData[position]['work_start']}'),
-                        ),
-                        Container(
-                          alignment: Alignment.topCenter,
-                          child: Text('${_monthData[position]['work_end']}'),
-                        ),
-                        Container(
+                  child: (_getHolidayFlag(position: position) == 1)
+                      ? Container(
                           alignment: Alignment.topRight,
-                          child: Text(
-                            '${_monthData[position]['minus']}',
-                            style: TextStyle(
-                                color: Colors.yellowAccent.withOpacity(0.5)),
-                          ),
+                          child: Text('Holiday'),
+                        )
+                      : Table(
+                          children: [
+                            TableRow(children: [
+                              Container(
+                                alignment: Alignment.topCenter,
+                                child: Text(
+                                    '${_monthData[position]['work_start']}'),
+                              ),
+                              Container(
+                                alignment: Alignment.topCenter,
+                                child:
+                                    Text('${_monthData[position]['work_end']}'),
+                              ),
+                              Container(
+                                alignment: Alignment.topRight,
+                                child: Text(
+                                  '${_monthData[position]['minus']}',
+                                  style: TextStyle(
+                                      color:
+                                          Colors.yellowAccent.withOpacity(0.5)),
+                                ),
+                              ),
+                              Container(
+                                alignment: Alignment.topRight,
+                                child: Text('${_monthData[position]['diff']}'),
+                              ),
+                            ]),
+                          ],
                         ),
-                        Container(
-                          alignment: Alignment.topRight,
-                          child: Text('${_monthData[position]['diff']}'),
-                        ),
-                      ]),
-                    ],
-                  ),
                 ),
               ],
             ),
@@ -384,24 +392,7 @@ class _MonthListScreenState extends State<MonthListScreen> {
    *
    */
   Widget _getInputButton(int position) {
-    _utility.makeYMDYData(_monthData[position]['date'], 0);
-
-    var _disp = 0;
-    switch (_utility.youbiNo) {
-      case 0:
-      case 6:
-        _disp = 1;
-        break;
-      default:
-        _disp = 0;
-        break;
-    }
-
-    if (_disp == 0) {
-      if (_monthData[position]['holiday'] == 1) {
-        _disp = 1;
-      }
-    }
+    var _disp = _getHolidayFlag(position: position);
 
     if (_disp == 1) {
       return IconSlideAction(
@@ -430,6 +421,32 @@ class _MonthListScreenState extends State<MonthListScreen> {
         ),
       );
     }
+  }
+
+  /**
+   *
+   */
+  int _getHolidayFlag({position}) {
+    _utility.makeYMDYData(_monthData[position]['date'], 0);
+
+    var _disp = 0;
+    switch (_utility.youbiNo) {
+      case 0:
+      case 6:
+        _disp = 1;
+        break;
+      default:
+        _disp = 0;
+        break;
+    }
+
+    if (_disp == 0) {
+      if (_monthData[position]['holiday'] == 1) {
+        _disp = 1;
+      }
+    }
+
+    return _disp;
   }
 
   /**
