@@ -18,6 +18,8 @@ dependencies:
   intl: ^0.16.1
   flutter_slidable: "^0.5.4"
   font_awesome_flutter: ^8.8.1
+  flutter_launcher_icons: ^0.7.5
+  flutter_native_splash: ^0.1.9
 
 dev_dependencies:
   flutter_test:
@@ -29,3 +31,15 @@ flutter:
 
   assets:
     - assets/image/
+
+flutter_native_splash:
+  image: "assets/image/ic_launcher.png"
+  color: "ff0000"
+
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/image/ic_launcher.png"
+
+adaptive_icon_background: "#ff0000"
+adaptive_icon_foreground: "assets/image/ic_launcher.png"
