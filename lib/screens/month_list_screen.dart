@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:workingtime/screens/estimate_screen.dart';
 import 'worktime_input_screen.dart';
 
 import '../utilities/utility.dart';
@@ -35,6 +36,10 @@ class _MonthListScreenState extends State<MonthListScreen> {
 
   String company;
   String genba;
+
+  int _holidayNum = 0;
+
+  List _thisMonthWorkday = List();
 
   /**
    * 初期動作
@@ -157,8 +162,12 @@ class _MonthListScreenState extends State<MonthListScreen> {
 
           int diffMinutes = _endTime.difference(_startTime).inMinutes;
 
-          var _minusMinutes =
-              _getMinusMinutes(end: data['data'][date]['work_end']);
+          var _minusMinutes = _utility.getMinusMinutes(
+            end: data['data'][date]['work_end'],
+            year: _displayYear,
+            month: _displayMonth,
+            day: _displayDay,
+          );
           _map['minus'] = "${_minusMinutes}min";
 
           var onedayDiff = ((diffMinutes - _minusMinutes) / 60);
@@ -171,6 +180,14 @@ class _MonthListScreenState extends State<MonthListScreen> {
 
       _monthData.add(_map);
     }
+
+    //----------------------//
+    for (var i = 0; i < _monthData.length; i++) {
+      if (_getHolidayFlag(position: i) == 1) {
+        _holidayNum++;
+      }
+    }
+    //----------------------//
 
     setState(() {});
   }
@@ -195,6 +212,9 @@ class _MonthListScreenState extends State<MonthListScreen> {
    */
   @override
   Widget build(BuildContext context) {
+    var _workday = _thisMonthWorkday.toSet().toList();
+    var _workDayNum = _workday.length;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black.withOpacity(0.1),
@@ -235,6 +255,28 @@ class _MonthListScreenState extends State<MonthListScreen> {
                       padding: EdgeInsets.only(right: 10),
                       child: Row(
                         children: <Widget>[
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 20),
+                            decoration: BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                    color: Colors.white.withOpacity(0.3),
+                                    width: 3),
+                              ),
+                            ),
+                            child: Text('${_workDayNum}'),
+                          ),
+                          GestureDetector(
+                            onTap: () => _goEstimateScreen(workday: _workday),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: Colors.green[900].withOpacity(0.5),
+                              ),
+                              child: Text('estimate'),
+                            ),
+                          ),
                           Expanded(
                             child: Container(
                               alignment: Alignment.topRight,
@@ -446,65 +488,11 @@ class _MonthListScreenState extends State<MonthListScreen> {
       }
     }
 
+    if (_disp == 0) {
+      _thisMonthWorkday.add(_monthData[position]['date']);
+    }
+
     return _disp;
-  }
-
-  /**
-   *
-   */
-  _getMinusMinutes({String end}) {
-    //-------------------// pattern
-    var _minusPattern = 0;
-
-    if (int.parse(_displayYear) >= 2021) {
-      if (int.parse(_displayMonth) >= 2) {
-        _minusPattern = 1;
-      }
-    }
-
-    // switch (_displayYear) {
-    //   case '2021':
-    //     switch (_displayMonth) {
-    //       case '02':
-    //       case '03':
-    //         _minusPattern = 1;
-    //         break;
-    //     }
-    //     break;
-    // }
-    //-------------------// pattern
-
-    switch (_minusPattern) {
-      case 0:
-        return 60;
-        break;
-      case 1:
-        var ex_end = end.split(":");
-
-        var _endTime = new DateTime(
-          int.parse(_displayYear),
-          int.parse(_displayMonth),
-          int.parse(_displayDay),
-          int.parse(ex_end[0]),
-          int.parse(ex_end[1]),
-        );
-
-        //(1)
-        var _hikaku1 = new DateTime(int.parse(_displayYear),
-            int.parse(_displayMonth), int.parse(_displayDay), 17, 30);
-        int diffMinutes1 = _endTime.difference(_hikaku1).inMinutes;
-        var _minus1 = (diffMinutes1 > 0) ? 30 : 0;
-
-        //(2)
-        var _hikaku2 = new DateTime(int.parse(_displayYear),
-            int.parse(_displayMonth), int.parse(_displayDay), 22, 00);
-        int diffMinutes2 = _endTime.difference(_hikaku2).inMinutes;
-        var _minus2 = (diffMinutes2 > 0) ? 30 : 0;
-
-        return (60 + _minus1 + _minus2);
-
-        break;
-    }
   }
 
   /**
@@ -545,6 +533,20 @@ class _MonthListScreenState extends State<MonthListScreen> {
           date: date,
           start: start,
           end: end,
+        ),
+      ),
+    );
+  }
+
+  /**
+   *
+   */
+  void _goEstimateScreen({workday}) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EstimateScreen(
+          workday: workday,
         ),
       ),
     );

@@ -109,4 +109,62 @@ class Utility {
 
     return _color;
   }
+
+  /**
+   *
+   */
+  int getMinusMinutes({end, year, month, day}) {
+    //-------------------// pattern
+    var _minusPattern = 0;
+
+    if (int.parse(year) >= 2021) {
+      if (int.parse(month) >= 2) {
+        _minusPattern = 1;
+      }
+    }
+
+    // switch (_displayYear) {
+    //   case '2021':
+    //     switch (_displayMonth) {
+    //       case '02':
+    //       case '03':
+    //         _minusPattern = 1;
+    //         break;
+    //     }
+    //     break;
+    // }
+    //-------------------// pattern
+
+    switch (_minusPattern) {
+      case 0:
+        return 60;
+        break;
+      case 1:
+        var ex_end = end.split(":");
+
+        var _endTime = new DateTime(
+          int.parse(year),
+          int.parse(month),
+          int.parse(day),
+          int.parse(ex_end[0]),
+          int.parse(ex_end[1]),
+        );
+
+        //(1)
+        var _hikaku1 = new DateTime(
+            int.parse(year), int.parse(month), int.parse(day), 17, 30);
+        int diffMinutes1 = _endTime.difference(_hikaku1).inMinutes;
+        var _minus1 = (diffMinutes1 > 0) ? 30 : 0;
+
+        //(2)
+        var _hikaku2 = new DateTime(
+            int.parse(year), int.parse(month), int.parse(day), 22, 00);
+        int diffMinutes2 = _endTime.difference(_hikaku2).inMinutes;
+        var _minus2 = (diffMinutes2 > 0) ? 30 : 0;
+
+        return (60 + _minus1 + _minus2);
+
+        break;
+    }
+  }
 }
