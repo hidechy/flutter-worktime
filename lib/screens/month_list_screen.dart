@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:workingtime/screens/estimate_screen.dart';
+import 'result_screen.dart';
 import 'worktime_input_screen.dart';
 
 import '../utilities/utility.dart';
@@ -277,6 +278,20 @@ class _MonthListScreenState extends State<MonthListScreen> {
                               child: Text('estimate'),
                             ),
                           ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          GestureDetector(
+                            onTap: () => _goResultScreen(),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: Colors.green[900].withOpacity(0.5),
+                              ),
+                              child: Text('result'),
+                            ),
+                          ),
                           Expanded(
                             child: Container(
                               alignment: Alignment.topRight,
@@ -548,6 +563,18 @@ class _MonthListScreenState extends State<MonthListScreen> {
         builder: (context) => EstimateScreen(
           workday: workday,
         ),
+      ),
+    );
+  }
+
+  /**
+   *
+   */
+  void _goResultScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ResultScreen(),
       ),
     );
   }
