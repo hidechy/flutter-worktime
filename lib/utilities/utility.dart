@@ -167,4 +167,12 @@ class Utility {
         break;
     }
   }
+
+  /**
+   * 金額を3桁区切りで表示する
+   */
+  final formatter = NumberFormat("#,###");
+  String makeCurrencyDisplay(String text) {
+    return formatter.format(int.parse(text));
+  }
 }

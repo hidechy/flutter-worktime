@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import '../utilities/utility.dart';
 
@@ -14,6 +15,13 @@ class _ResultScreenState extends State<ResultScreen> {
   Utility _utility = Utility();
 
   List<Map<dynamic, dynamic>> _resultData = List();
+
+  final ItemScrollController _itemScrollController = ItemScrollController();
+
+  final ItemPositionsListener _itemPositionsListener =
+      ItemPositionsListener.create();
+
+  int maxNo = 0;
 
   /**
    * 初期動作
@@ -44,9 +52,9 @@ class _ResultScreenState extends State<ResultScreen> {
         var ex_data = (data['data'][i]).split(';');
 
         List _list = List();
-        var ex_data_4 = (ex_data[4]).split('/');
-        for (var j = 0; j < ex_data_4.length; j++) {
-          _list.add(ex_data_4[j]);
+        var daily_data = (ex_data[6]).split('/');
+        for (var j = 0; j < daily_data.length; j++) {
+          _list.add(daily_data[j]);
         }
 
         Map _map = Map();
@@ -54,12 +62,16 @@ class _ResultScreenState extends State<ResultScreen> {
         _map['summary'] = ex_data[1];
         _map['company'] = ex_data[2];
         _map['genba'] = ex_data[3];
+        _map['salary'] = ex_data[4];
+        _map['hour'] = ex_data[5];
         _map['daily'] = _list;
 
         _resultData.add(_map);
       }
     }
     ////////////////////////////////////////
+
+    maxNo = _resultData.length;
 
     setState(() {});
   }
@@ -74,14 +86,11 @@ class _ResultScreenState extends State<ResultScreen> {
         backgroundColor: Colors.transparent,
         title: Text('勤務時間'),
         centerTitle: true,
-
-        //-------------------------//これを消すと「←」が出てくる（消さない）
-        leading: Icon(
-          Icons.check_box_outline_blank,
-          color: Color(0xFF2e2e2e),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_downward),
+          color: Colors.greenAccent,
+          onPressed: () => _scroll(),
         ),
-        //-------------------------//これを消すと「←」が出てくる（消さない）
-
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.close),
@@ -101,12 +110,27 @@ class _ResultScreenState extends State<ResultScreen> {
   }
 
   /**
-   * リスト表示
+   *
+   */
+  void _scroll() {
+    _itemScrollController.scrollTo(
+      index: maxNo,
+      duration: Duration(seconds: 1),
+      curve: Curves.easeInOutCubic,
+    );
+  }
+
+  /**
+   *
    */
   Widget _resultList() {
-    return ListView.builder(
+    return ScrollablePositionedList.builder(
+      itemBuilder: (context, index) {
+        return _listItem(position: index);
+      },
       itemCount: _resultData.length,
-      itemBuilder: (context, int position) => _listItem(position: position),
+      itemScrollController: _itemScrollController,
+      itemPositionsListener: _itemPositionsListener,
     );
   }
 
@@ -123,19 +147,45 @@ class _ResultScreenState extends State<ResultScreen> {
           child: Column(
             children: <Widget>[
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text('${_resultData[position]['ym']}'),
-                  Text('${_resultData[position]['summary']}'),
+                  Text(
+                    '${_resultData[position]['ym']}',
+                    style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.greenAccent.withOpacity(0.7)),
+                  ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: <Widget>[
+                        Table(
+                          children: [
+                            TableRow(children: [
+                              Container(
+                                child:
+                                    Text('${_resultData[position]['summary']}'),
+                                alignment: Alignment.topRight,
+                              ),
+                              Container(
+                                child: Text(
+                                    '${_utility.makeCurrencyDisplay(_resultData[position]['salary'])}'),
+                                alignment: Alignment.topRight,
+                              ),
+                              Container(
+                                child: Text(
+                                    '${_utility.makeCurrencyDisplay(_resultData[position]['hour'])}'),
+                                alignment: Alignment.topRight,
+                              ),
+                            ]),
+                          ],
+                        ),
+                        Text('${_resultData[position]['company']}'),
+                        Text('${_resultData[position]['genba']}'),
+                      ],
+                    ),
+                  ),
                 ],
-              ),
-              Container(
-                alignment: Alignment.topRight,
-                child: Text('${_resultData[position]['company']}'),
-              ),
-              Container(
-                alignment: Alignment.topRight,
-                child: Text('${_resultData[position]['genba']}'),
               ),
               _dailyList(position: position),
             ],
