@@ -138,6 +138,8 @@ class _ResultScreenState extends State<ResultScreen> {
    * リストアイテム表示
    */
   Widget _listItem({int position}) {
+    var _workDayCount = _getWorkDayCount(position: position);
+
     return Card(
       color: Colors.black.withOpacity(0.3),
       child: DefaultTextStyle(
@@ -163,20 +165,28 @@ class _ResultScreenState extends State<ResultScreen> {
                           children: [
                             TableRow(children: [
                               Container(
+                                child: Text('${_workDayCount}'),
+                                alignment: Alignment.topRight,
+                              ),
+                              Container(
                                 child:
                                     Text('${_resultData[position]['summary']}'),
                                 alignment: Alignment.topRight,
                               ),
-                              Container(
-                                child: Text(
-                                    '${_utility.makeCurrencyDisplay(_resultData[position]['salary'])}'),
-                                alignment: Alignment.topRight,
-                              ),
-                              Container(
-                                child: Text(
-                                    '${_utility.makeCurrencyDisplay(_resultData[position]['hour'])}'),
-                                alignment: Alignment.topRight,
-                              ),
+                              (_resultData[position]['salary'] == "")
+                                  ? Container()
+                                  : Container(
+                                      child: Text(
+                                          '${_utility.makeCurrencyDisplay(_resultData[position]['salary'])}'),
+                                      alignment: Alignment.topRight,
+                                    ),
+                              (_resultData[position]['hour'] == "")
+                                  ? Container()
+                                  : Container(
+                                      child: Text(
+                                          '${_utility.makeCurrencyDisplay(_resultData[position]['hour'])}'),
+                                      alignment: Alignment.topRight,
+                                    ),
                             ]),
                           ],
                         ),
@@ -213,6 +223,9 @@ class _ResultScreenState extends State<ResultScreen> {
                 child: Text('${ex_data[0]}'),
               ),
               Container(
+                decoration: (ex_data[6] == '1')
+                    ? BoxDecoration(color: Colors.yellowAccent.withOpacity(0.3))
+                    : null,
                 width: 60,
                 child: Text('${ex_data[1]}'),
               ),
@@ -225,6 +238,9 @@ class _ResultScreenState extends State<ResultScreen> {
                 child: Text('${ex_data[3]}'),
               ),
               Container(
+                decoration: (ex_data[4] == '0')
+                    ? BoxDecoration(color: Colors.yellowAccent.withOpacity(0.3))
+                    : null,
                 width: 70,
                 child: Text('${ex_data[4]}'),
               ),
@@ -266,5 +282,17 @@ class _ResultScreenState extends State<ResultScreen> {
     }
 
     return _color;
+  }
+
+  int _getWorkDayCount({int position}) {
+    var _workDayCount = 0;
+    for (var i = 0; i < _resultData[position]['daily'].length; i++) {
+      var ex_data = (_resultData[position]['daily'][i]).split('|');
+      if (ex_data[1] != "") {
+        _workDayCount++;
+      }
+    }
+
+    return _workDayCount;
   }
 }
