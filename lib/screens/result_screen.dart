@@ -23,6 +23,8 @@ class _ResultScreenState extends State<ResultScreen> {
 
   int maxNo = 0;
 
+  List<Map<dynamic, dynamic>> _yearList = List();
+
   /**
    * 初期動作
    */
@@ -48,6 +50,7 @@ class _ResultScreenState extends State<ResultScreen> {
     if (response != null) {
       data = jsonDecode(response.body);
 
+      var _inputedYear = "";
       for (var i = 0; i < data['data'].length; i++) {
         var ex_data = (data['data'][i]).split(';');
 
@@ -67,6 +70,16 @@ class _ResultScreenState extends State<ResultScreen> {
         _map['daily'] = _list;
 
         _resultData.add(_map);
+
+        //
+        var ex_ym = (ex_data[0]).split('-');
+        if (_inputedYear != ex_ym[0]) {
+          Map _map2 = Map();
+          _map2['year'] = ex_ym[0];
+          _map2['index'] = i;
+          _yearList.add(_map2);
+        }
+        _inputedYear = ex_ym[0];
       }
     }
     ////////////////////////////////////////
@@ -89,7 +102,7 @@ class _ResultScreenState extends State<ResultScreen> {
         leading: IconButton(
           icon: Icon(Icons.arrow_downward),
           color: Colors.greenAccent,
-          onPressed: () => _scroll(),
+          onPressed: () => _scroll(pos: maxNo),
         ),
         actions: <Widget>[
           IconButton(
@@ -103,7 +116,18 @@ class _ResultScreenState extends State<ResultScreen> {
         fit: StackFit.expand,
         children: <Widget>[
           _utility.getBackGround(),
-          _resultList(),
+          Column(
+            children: <Widget>[
+              Container(
+                child: Wrap(
+                  children: _makeYearBtn(),
+                ),
+              ),
+              Expanded(
+                child: _resultList(),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -112,9 +136,9 @@ class _ResultScreenState extends State<ResultScreen> {
   /**
    *
    */
-  void _scroll() {
+  void _scroll({pos}) {
     _itemScrollController.scrollTo(
-      index: maxNo,
+      index: pos,
       duration: Duration(seconds: 1),
       curve: Curves.easeInOutCubic,
     );
@@ -294,5 +318,26 @@ class _ResultScreenState extends State<ResultScreen> {
     }
 
     return _workDayCount;
+  }
+
+  /**
+   *
+   */
+  List _makeYearBtn() {
+    List<Widget> _btnList = List();
+    for (var i = 1; i < _yearList.length; i++) {
+      _btnList.add(
+        GestureDetector(
+          onTap: () => _scroll(pos: _yearList[i]['index']),
+          child: Container(
+            color: Colors.green[900].withOpacity(0.5),
+            margin: EdgeInsets.symmetric(vertical: 4, horizontal: 6),
+            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Text('${_yearList[i]['year']}'),
+          ),
+        ),
+      );
+    }
+    return _btnList;
   }
 }
